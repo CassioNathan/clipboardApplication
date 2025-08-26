@@ -1,0 +1,56 @@
+{
+  "name": "clip",
+  "displayName": "clipboard",
+  "description": "clipa o board",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.101.2"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:clipView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "clipSidebar",
+          "title": "Clip",
+          "icon": "media/clipboard.svg"
+        }
+      ]
+    },
+    "views": {
+      "clipSidebar": [
+        {
+          "id": "clipView",
+          "name": "Área de Transferência",
+          "icon": "media/clipboard.svg",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.101.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.25.1",
+    "typescript": "^5.8.3"
+  }
+}

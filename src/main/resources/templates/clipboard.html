@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard Compartilhado</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            margin: 0;
+            background-color: #121212;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            margin: 0;
+        }
+
+        .formulario {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .formulario textarea {
+            width: 100%;
+            height: 40px;
+            padding: 10px;
+            resize: vertical;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .botoes {
+            display: flex;
+            gap: 10px;
+        }
+
+        .botoes button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: #2196f3;
+            color: white;
+            cursor: pointer;
+        }
+
+        .botoes button:hover {
+            background-color: #0b7dda;
+        }
+
+        .lista-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #1e1e1e;
+            height: 100px; /* altura fixa */
+            width: 100%; /* largura total */
+            box-sizing: border-box;
+        }
+
+        .item span, .item img {
+            max-height: 60px; /* limita a altura do conteúdo */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .item button {
+            margin-top: 8px;
+            padding: 8px 0;
+            border: none;
+            border-radius: 4px;
+            background-color: #2196f3;
+            color: white;
+            cursor: pointer;
+            width: 100%; /* botão ocupa largura total */
+            font-weight: bold;
+        }
+
+        .item button:hover {
+            background-color: #0b7dda;
+        }
+
+        .toast {
+            visibility: hidden;
+            min-width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease, bottom 0.3s ease;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90vw;
+            height: 500px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .close {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .modal-text {
+            background: #1e1e1e; /* um pouco mais escuro que o fundo do modal */
+            color: #ffffff;
+            padding: 16px;
+            border-radius: 6px;
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 50px; /* espaço para o botão fixo */
+            white-space: pre-wrap; /* quebra de linha automática pra texto */
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90vw;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+<h1>Clipboard Compartilhado</h1>
+
+<div class="formulario">
+    <textarea id="input" placeholder="Digite algo aqui..."></textarea>
+
+    <div class="arquivos">
+        <label for="fileInput" class="custom-btn">Selecionar arquivo</label>
+        <input type="file" id="fileInput" hidden/>
+        <div id="fileList"></div>
+    </div>
+
+    <div class="botoes">
+        <button id="btnQr" class="custom-btn">Abrir no celular</button>
+    </div>
+
+    <div class="botoes">
+        <button class="custom-btn" onclick="limpar()">Limpar</button>
+        <button class="custom-btn" onclick="enviar()">Enviar</button>
+    </div>
+</div>
+
+
+<div class="lista-container" id="lista"></div>
+
+<!-- Modal escondido -->
+<div id="qrModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" onclick="fecharModalQRCode()">&times;</span>
+        </div>
+        <h1>Conecte-se na mesma rede do servidor</h1>
+        <h1>E escaneie o QR-Code</h1>
+        <div id="qrcode"
+             style="width:200px; height:200px; padding: 15px; margin-top: 10px; margin-bottom: 10px;background-color: #f0f0f0;align-self: center"></div>
+        <h1 id="qrText" style = "font-size: x-small">QR_TEXT</h1>
+        <br/>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" onclick="fecharModal()">&times;</span>
+        </div>
+
+        <div id="modalTexto" class="modal-text"></div>
+
+        <div class="botoes">
+            <button onclick="copiarTextoModal()">Copiar</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">Copiado!</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script th:inline="javascript">
+    const btnQr = document.getElementById("btnQr");
+    const modal = document.getElementById("qrModal");
+    const closeModal = document.getElementById("closeModal");
+    let qr = null;
+
+    // recomendo montar a base pelo thymeleaf assim:
+    const serverIp = /*[[${serverIp}]]*/ "localhost";
+    const port = /*[[${port}]]*/ "4002";
+    const BASE_URL = "http://" + serverIp + ":" + port;
+    const API_URL = BASE_URL + "/clipboard";           // já aproveita no resto do app
+    const QR_TARGET = BASE_URL + "/clipboardArea";      // link que vai pro QR
+
+    btnQr.addEventListener("click", () => {
+        const target = QR_TARGET; // se o IP/porta mudarem no back, isso já vem certo
+        const container = document.getElementById("qrcode");
+
+        if (!qr) {
+            qr = new QRCode(container, {text: target, width: 200, height: 200});
+            document.getElementById("qrText").innerText = QR_TARGET;
+        } else {
+            qr.clear();
+            qr.makeCode(target);
+        }
+        modal.style.display = "flex";
+    });
+
+    // Detecta ambiente
+    function getEnv() {
+        if (window.navigator.userAgent.includes("JavaFX")) return "javafx";
+        if (window.acquireVsCodeApi) return "vscode";
+        return "browser";
+    }
+
+    const env = getEnv();
+
+    // Listener para input de arquivos
+    document.getElementById("fileInput").addEventListener("change", function () {
+        const textarea = document.getElementById("input");
+        const nomes = Array.from(this.files).map(f => f.name).join("\n");
+        textarea.value = nomes;
+        isArquivo = true;
+    });
+
+    // Função de envio
+    async function enviar() {
+        const fileInput = document.getElementById("fileInput");
+        const textarea = document.getElementById("input");
+
+        if (!textarea.value && fileInput.files.length === 0) return;
+
+        if (isArquivo) {
+            const formData = new FormData();
+            for (const file of fileInput.files) {
+                if (file.size > 100 * 1024 * 1024) { // 10MB
+                    alert(`O arquivo ${file.name} é maior que 100 MB!`);
+                    return;
+                }
+                formData.append("files", file);
+            }
+            await fetch(API_URL + "/upload", {method: "POST", body: formData});
+        } else {
+            await fetch(API_URL, {
+                method: "POST",
+                headers: {"Content-Type": "text/plain"},
+                body: textarea.value
+            });
+        }
+
+        limpar();
+        await carregarLista();
+    }
+
+    // Função de download adaptada
+    function baixarArquivo(fileName) {
+        const url = `${API_URL}/download/${encodeURIComponent(fileName)}`;
+
+        if (env === "javafx") {
+            if (window.app && typeof window.app.baixarArquivo === "function") {
+                window.app.baixarArquivo(url, fileName);
+            } else {
+                mostrarToast("WebView JavaFX: função de download não disponível");
+            }
+        } else if (env === "vscode") {
+            const vscode = window.acquireVsCodeApi();
+            vscode.postMessage({command: "download", fileName, url});
+        } else {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+        }
+    }
+
+    // Limpa textarea e input
+    function limpar() {
+        document.getElementById("input").value = "";
+        document.getElementById("fileInput").value = "";
+        isArquivo = false;
+    }
+
+    // Carrega lista do backend
+    async function carregarLista() {
+        try {
+            const resp = await fetch(API_URL);
+            const itens = await resp.json();
+            const lista = document.getElementById("lista");
+            lista.innerHTML = "";
+
+            itens.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "item";
+
+                const isArquivoItem = item.startsWith("Arquivo: ");
+                const displayName = isArquivoItem ? item.replace("Arquivo: ", "") : item;
+
+                if (!isArquivoItem && item.startsWith("data:image/")) {
+                    const img = document.createElement("img");
+                    img.src = item;
+                    img.onclick = () => abrirModal(item);
+                    div.appendChild(img);
+                } else {
+                    const span = document.createElement("span");
+                    span.innerText = displayName;
+                    span.onclick = () => abrirModal(item);
+                    div.appendChild(span);
+                }
+
+                const btn = document.createElement("button");
+                if (isArquivoItem) {
+                    btn.innerText = "Baixar";
+                    btn.onclick = e => {
+                        e.stopPropagation();
+                        baixarArquivo(displayName);
+                    };
+                } else {
+                    btn.innerText = "Copiar";
+                    btn.onclick = e => {
+                        e.stopPropagation();
+                        copiarTextoOuImagem(item);
+                    };
+                }
+
+                div.appendChild(btn);
+                lista.appendChild(div);
+            });
+        } catch (e) {
+            mostrarToast("Erro ao carregar lista: " + e);
+        }
+    }
+
+    // Copia texto ou imagem
+    function copiarTextoOuImagem(content) {
+        if (content.startsWith("data:image/")) {
+            if (env === "browser") {
+                fetch(content)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const item = new ClipboardItem({[blob.type]: blob});
+                        if (navigator.clipboard && navigator.clipboard.write) {
+                            navigator.clipboard.write([item]).catch(err => alert("Erro ao copiar imagem: " + err));
+                            mostrarToast();
+                        } else {
+                            mostrarToast("Copiar imagem não suportado nesse navegador.");
+                        }
+                    });
+            } else {
+                mostrarToast("Copiar imagens não suportado nesse ambiente.");
+            }
+        } else {
+            const temp = document.createElement("textarea");
+            temp.value = content;
+            document.body.appendChild(temp);
+            temp.select();
+            try {
+                document.execCommand("copy");
+                mostrarToast();
+            } catch (err) {
+                alert("Erro ao copiar texto.");
+            }
+            document.body.removeChild(temp);
+        }
+    }
+
+    // Modal
+    function abrirModal(conteudo) {
+        const modalTexto = document.getElementById("modalTexto");
+        modalTexto.innerHTML = "";
+        if (conteudo.startsWith("data:image/")) {
+            const img = document.createElement("img");
+            img.src = conteudo;
+            img.style.maxWidth = "100%";
+            img.style.maxHeight = "400px";
+            modalTexto.appendChild(img);
+        } else {
+            modalTexto.innerText = conteudo;
+        }
+        modalTexto.dataset.valor = conteudo;
+        document.getElementById("modal").style.display = "flex";
+    }
+
+    function fecharModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function fecharModalQRCode() {
+        document.getElementById("qrModal").style.display = "none";
+    }
+
+    function copiarTextoModal() {
+        copiarTextoOuImagem(textoModal);
+    }
+
+    // Toast
+    function mostrarToast(mensagem = "Copiado!") {
+        const toast = document.getElementById("toast");
+        toast.textContent = mensagem;
+        toast.className = "toast show";
+        setTimeout(() => {
+            toast.className = "toast";
+        }, 2000);
+    }
+
+    // Inicializa
+    carregarLista();
+    setInterval(carregarLista, 2000);
+</script>
+</body>
+</html>
