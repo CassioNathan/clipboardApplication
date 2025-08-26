@@ -12,7 +12,7 @@
 ## 1. Introdução
 O **Clipboard** é uma aplicação desenvolvida para compartilhar rapidamente a área de transferência (**clipboard**) entre dispositivos **Windows** e **Mac**.  
 
-O objetivo é tornar o processo simples e ágil, permitindo que **textos** e **imagens** sejam transferidos de um dispositivo para outro sem complicações.
+O objetivo é tornar o processo simples e ágil, permitindo que **textos** e **imagens** e **pequenos arquivos** sejam transferidos de um dispositivo para outro sem complicações.
 
 ---
 
@@ -27,9 +27,9 @@ Era necessário compartilhar conteúdos entre **Windows** e **Mac** de forma **r
 - **Interface web:** servidor possui uma página HTML que permite interagir com os itens copiados e enviar manualmente textos.
 - **Extensão VS Code:** abre um WebView que direciona o usuário para a página web, facilitando o acesso dentro do editor.
 - **Histórico de itens:** últimos **5 itens copiados** (textos ou imagens) ficam salvos e reutilizáveis na interface web.
-- **Integração com a barra do Windows:** ícone oculto com opções de abrir a página no navegador ou encerrar o aplicativo.
-- **Atalho rápido:** `SHIFT + F12` permite abrir a página web instantaneamente.
-- **Enviar arquivos:** possibilidade de enviar pequenos arquivos (até 10 megas)e.
+- **Integração com a barra do Windows:** ícone na aba de itens ocultos do windows para sempre estar disponivel.
+- **Atalho rápido:** permite abrir a página web ou webview instantaneamente, alem de disponibilizar um qr code para leitura em dispositivos moveis.
+- **Enviar arquivos:** possibilidade de enviar pequenos arquivos (até 100 megas)e.
 
 ---
 
@@ -54,8 +54,8 @@ Era necessário compartilhar conteúdos entre **Windows** e **Mac** de forma **r
 
 ## 6. Histórico de Versões
 
-| Versão | Data       | Mudanças principais       | Autor          |
-|--------|-----------|--------------------------|----------------|
+| Versão | Data       | Mudanças principais        | Autor          |
+|--------|------------|----------------------------|----------------|
 | 0.0.1  | 01/08/2025 | Criação inicial do projeto | Cassio Nathan  |
 
 ---
