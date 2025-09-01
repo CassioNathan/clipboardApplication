@@ -1,0 +1,36 @@
+
+
+Version:	3.50
+CmdLine:	C:\projetos\clipboardApplication\clipboardApp.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	C:\projetos\clipboardApplication\.
+Requires JDK:	No
+Requires 64-Bit: Yes
+Java min ver:	1.017.000
+Java max ver:	
+JRE paths:	C:\projetos\clipboardApplication\target\runtime
+Check launcher:	C:\projetos\clipboardApplication\target\runtime\bin\javaw.exe (OK)
+Version string: 1.017.000_010 / 64-Bit (OK)
+Launcher:	C:\projetos\clipboardApplication\target\runtime\bin\javaw.exe
+Launcher args:	-jar "C:\projetos\clipboardApplication\clipboardApp.exe"
+Args length:	56/32768 chars
+Exit code:	0
+
+
+Version:	3.50
+CmdLine:	C:\projetos\clipboardApplication\clipboardApp.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	C:\projetos\clipboardApplication\.
+Requires JDK:	No
+Requires 64-Bit: Yes
+Java min ver:	1.017.000
+Java max ver:	
+JRE paths:	C:\projetos\clipboardApplication\target\runtime
+Check launcher:	C:\projetos\clipboardApplication\target\runtime\bin\javaw.exe (OK)
+Version string: 1.017.000_010 / 64-Bit (OK)
+Launcher:	C:\projetos\clipboardApplication\target\runtime\bin\javaw.exe
+Launcher args:	-jar "C:\projetos\clipboardApplication\clipboardApp.exe"
+Args length:	56/32768 chars
+Exit code:	0
