@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Item</title>
+    <style>
+        /* Baseado no estilo do modal */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #2a2a2a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #2a2a2a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90vw;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .item-content {
+            background: #1e1e1e;
+            color: #ffffff;
+            padding: 16px;
+            border-radius: 6px;
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .botoes button {
+            flex: 1;
+            padding: 10px;
+            background: #333;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .botoes button:hover {
+            background: #444;
+        }
+
+        .botoes svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h3>Clipboard Compartilhado</h3>
+    <div id="itemConteudo" class="item-content">
+        <!-- Aqui o item será exibido (texto ou imagem) -->
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const UUID = /*[[${ItemUuid}]]*/ "NOT_UUID";
+    const serverIp = /*[[${serverIp}]]*/ "localhost";
+    const port = /*[[${port}]]*/ "4002";
+    const BASE_URL = "http://" + serverIp + ":" + port;
+    const API_URL = BASE_URL + "/clipboard/" + UUID;
+
+    let itemAtual = null; // guarda o item que recebemos do backend
+
+    async function carregarItemCompartilhado() {
+        try {
+            const resp = await fetch(API_URL);
+            if (!resp.ok) throw new Error("Item não encontrado ou já consumido");
+
+            const item = await resp.text();
+            itemAtual = item;
+
+            const container = document.getElementById("itemConteudo");
+
+            // Container pros botões
+            const btnContainer = document.createElement("div");
+            btnContainer.style.display = "flex";
+            btnContainer.style.width = "100%";
+            btnContainer.style.marginTop = "10px";
+
+            if (item.startsWith("Arquivo: ")) {
+                // botão único de baixar
+                const displayName = item.replace("Arquivo: ", "");
+                const btnDownload = document.createElement("button");
+                btnDownload.style.flex = "1";
+                btnDownload.style.backgroundColor = "#2196f3";
+                btnDownload.style.color = "white";
+                btnDownload.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                 `;
+                btnDownload.onclick = e => {
+                    e.stopPropagation();
+                    baixarArquivo(displayName);
+                };
+                btnContainer.appendChild(btnDownload);
+
+                const span = document.createElement("span");
+                span.style.display = "flex";
+                span.style.height = "100%";
+                span.style.width = "100%";
+                span.innerText = displayName;
+                container.appendChild(span);
+
+            } else {
+                // é texto ou imagem
+                if (item.startsWith("data:image/")) {
+                    const img = document.createElement("img");
+                    img.src = item;
+                    img.style.maxWidth = "100%";
+                    img.style.maxHeight = "400px";
+                    container.appendChild(img);
+                } else {
+                    const span = document.createElement("span");
+                    span.style.display = "flex";
+                    span.style.height = "100%";
+                    span.style.width = "100%";
+                    span.innerText = item;
+                    container.appendChild(span);
+                }
+
+                const btnCopy = document.createElement("button");
+                btnCopy.style.flex = "1";
+                btnCopy.style.backgroundColor = "#2196f3";
+                btnCopy.style.color = "white";
+                btnCopy.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4
+                             a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                `;
+                btnCopy.onclick = e => {
+                    e.stopPropagation();
+                    copiarTextoOuImagem(itemAtual);
+                };
+                btnContainer.appendChild(btnCopy);
+            }
+
+            container.appendChild(btnContainer);
+
+        } catch (e) {
+            mostrarToast("Erro ao carregar item: " + e.message);
+        }
+    }
+
+    // Detecta ambiente
+    function getEnv() {
+        if (window.navigator.userAgent.includes("JavaFX")) return "javafx";
+        if (window.acquireVsCodeApi) return "vscode";
+        return "browser";
+    }
+
+    const env = getEnv();
+
+    // Copia texto ou imagem
+    function copiarTextoOuImagem(content) {
+        if (content.startsWith("data:image/")) {
+            if (env === "browser") {
+                fetch(content)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const item = new ClipboardItem({[blob.type]: blob});
+                        if (navigator.clipboard && navigator.clipboard.write) {
+                            navigator.clipboard.write([item]).catch(err => alert("Erro ao copiar imagem: " + err));
+                            mostrarToast();
+                        } else {
+                            mostrarToast("Copiar imagem não suportado nesse navegador.");
+                        }
+                    });
+            } else {
+                mostrarToast("Copiar imagens não suportado nesse ambiente.");
+            }
+        } else {
+            const temp = document.createElement("textarea");
+            temp.value = content;
+            document.body.appendChild(temp);
+            temp.select();
+            try {
+                document.execCommand("copy");
+                mostrarToast();
+            } catch (err) {
+                alert("Erro ao copiar texto.");
+            }
+            document.body.removeChild(temp);
+        }
+    }
+
+    // Função de download adaptada
+    function baixarArquivo(fileName) {
+        const url = `http://${serverIp}/clipboard/download/${encodeURIComponent(fileName)}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+    }
+
+    // Toast
+    function mostrarToast(mensagem = "Copiado!") {
+        const toast = document.getElementById("toast");
+        toast.textContent = mensagem;
+        toast.className = "toast show";
+        setTimeout(() => {
+            toast.className = "toast";
+        }, 2000);
+    }
+
+    carregarItemCompartilhado();
+</script>
+</body>
+</html>
