@@ -177,24 +177,11 @@
             white-space: pre-wrap; /* quebra de linha automática pra texto */
         }
 
-        .modal-content {
-            background: #2a2a2a;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90vw;
-            height: 500px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
 
         .custom-btn {
             display: flex;
             justify-content: center;
             align-items: center;
-
             padding: 8px 12px;
             background-color: #007bff;
             color: #fff;
@@ -240,8 +227,39 @@
         <h1>E escaneie o QR-Code</h1>
         <div id="qrcode"
              style="width:200px; height:200px; padding: 15px; margin-top: 10px; margin-bottom: 10px;background-color: #f0f0f0;align-self: center"></div>
-        <h1 id="qrText" style = "font-size: x-small">QR_TEXT</h1>
+        <h1 id="qrText" style="font-size: x-small">QR_TEXT</h1>
         <br/>
+    </div>
+</div>
+
+<!-- Modal para compartilhar item -->
+<div id="shareQrModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" onclick="fecharShareModalQRCode()">&times;</span>
+        </div>
+        <div style="display: flex; flex: 1; flex-direction: column; gap: 10px; align-items: center">
+            <h1>Escaneie o QR-Code para abrir o item</h1>
+
+            <div id="shareQrcode"
+                 style="width:200px; height:200px; padding: 15px; margin-top: 10px; margin-bottom: 10px;
+             background-color: #f0f0f0; align-self: center"></div>
+
+            <h1 id="shareQrText" style="font-size: x-small">QR_TEXT</h1>
+        </div>
+        <div class="botoes" style="display: flex; gap: 10px; margin-top: 10px;">
+            <button onclick="copiarLinkCompartilhado()">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4
+                             a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -251,14 +269,41 @@
         <div class="modal-header">
             <span class="close" onclick="fecharModal()">&times;</span>
         </div>
-
+        <h3 id="id-conteudo">ID</h3>
         <div id="modalTexto" class="modal-text"></div>
 
-        <div class="botoes">
-            <button onclick="copiarTextoModal()">Copiar</button>
+        <div class="botoes" style="display: flex; gap: 10px; margin-top: 10px;">
+            <!-- Botão copiar -->
+            <button onclick="copiarTextoModal()" style="flex: 1;">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4
+                             a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </button>
+
+            <!-- Botão compartilhar -->
+            <button onclick="compartilharItemModal()" style="flex: 1;">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+            </button>
         </div>
     </div>
 </div>
+
 
 <div id="toast" class="toast">Copiado!</div>
 
@@ -373,7 +418,7 @@
             const lista = document.getElementById("lista");
             lista.innerHTML = "";
 
-            itens.forEach(item => {
+            itens.forEach((item, index) => {
                 const div = document.createElement("div");
                 div.className = "item";
 
@@ -383,37 +428,165 @@
                 if (!isArquivoItem && item.startsWith("data:image/")) {
                     const img = document.createElement("img");
                     img.src = item;
-                    img.onclick = () => abrirModal(item);
+                    img.onclick = () => abrirModal(item, index);
                     div.appendChild(img);
                 } else {
                     const span = document.createElement("span");
                     span.innerText = displayName;
-                    span.onclick = () => abrirModal(item);
+                    span.onclick = () => abrirModal(item, index);
                     div.appendChild(span);
                 }
 
-                const btn = document.createElement("button");
+                // Container pros botões
+                const btnContainer = document.createElement("div");
+                btnContainer.style.display = "flex";
+                btnContainer.style.width = "100%";
+                btnContainer.style.marginTop = "5px";
+                btnContainer.style.gap = "10px";
+
                 if (isArquivoItem) {
-                    btn.innerText = "Baixar";
-                    btn.onclick = e => {
+                    // botão único de baixar
+                    const btnDownload = document.createElement("button");
+                    btnDownload.style.flex = "1";
+                    btnDownload.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    `;
+                    btnDownload.onclick = e => {
                         e.stopPropagation();
                         baixarArquivo(displayName);
                     };
+
+                    // botão compartilhar (mesmo ícone usado no outro if)
+                    const btnShare = document.createElement("button");
+                    btnShare.style.flex = "1";
+                    btnShare.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                   </svg>
+                    `;
+                    btnShare.onclick = e => {
+                        e.stopPropagation();
+                        compartilharItem(index);
+                    };
+
+                    btnContainer.appendChild(btnDownload);
+                    btnContainer.appendChild(btnShare);
                 } else {
-                    btn.innerText = "Copiar";
-                    btn.onclick = e => {
+                    // botão copiar
+                    const btnCopy = document.createElement("button");
+                    btnCopy.style.flex = "1";
+                    btnCopy.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         width="20" height="20" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4
+                                 a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                `;
+                    btnCopy.onclick = e => {
                         e.stopPropagation();
                         copiarTextoOuImagem(item);
                     };
+
+                    // botão compartilhar
+                    const btnShare = document.createElement("button");
+                    btnShare.style.flex = "1";
+                    btnShare.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         width="20" height="20" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                `;
+                    btnShare.onclick = e => {
+                        e.stopPropagation();
+                        compartilharItem(index);
+                    };
+
+                    btnContainer.appendChild(btnCopy);
+                    btnContainer.appendChild(btnShare);
                 }
 
-                div.appendChild(btn);
+                div.appendChild(btnContainer);
                 lista.appendChild(div);
             });
         } catch (e) {
             mostrarToast("Erro ao carregar lista: " + e);
         }
     }
+
+    async function compartilharItem(index) {
+        try {
+            const resp = await fetch(`${API_URL}/share`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(index)
+            });
+            if (!resp.ok) throw new Error("Erro ao compartilhar");
+
+            const uuid = await resp.text();
+            const link = `${BASE_URL}/clipboardShare/${uuid}`;
+            mostrarQRCode(link); // 👈 abre o modal que criamos
+        } catch (e) {
+            mostrarToast("Erro ao compartilhar: " + e.message);
+        }
+    }
+
+    let shareQr = null;
+    let ultimoLinkCompartilhado = "";
+
+    function mostrarQRCode(link) {
+        ultimoLinkCompartilhado = link;
+        const modal = document.getElementById("shareQrModal");
+        const container = document.getElementById("shareQrcode");
+
+        if (!shareQr) {
+            shareQr = new QRCode(container, {text: link, width: 200, height: 200});
+        } else {
+            shareQr.clear();
+            shareQr.makeCode(link);
+        }
+
+        document.getElementById("shareQrText").innerText = link;
+        modal.style.display = "flex";
+    }
+
+    function fecharShareModalQRCode() {
+        document.getElementById("shareQrModal").style.display = "none";
+    }
+
+    function copiarLinkCompartilhado() {
+        if (!ultimoLinkCompartilhado) return;
+        navigator.clipboard.writeText(ultimoLinkCompartilhado)
+            .then(() => mostrarToast("Link copiado!"))
+            .catch(err => mostrarToast("Erro ao copiar: " + err));
+    }
+
 
     // Copia texto ou imagem
     function copiarTextoOuImagem(content) {
@@ -449,7 +622,7 @@
     }
 
     // Modal
-    function abrirModal(conteudo) {
+    function abrirModal(conteudo, index) {
         const modalTexto = document.getElementById("modalTexto");
         modalTexto.innerHTML = "";
         if (conteudo.startsWith("data:image/")) {
@@ -462,6 +635,8 @@
             modalTexto.innerText = conteudo;
         }
         modalTexto.dataset.valor = conteudo;
+
+        document.getElementById("id-conteudo").textContent = index;
         document.getElementById("modal").style.display = "flex";
     }
 
@@ -474,8 +649,18 @@
     }
 
     function copiarTextoModal() {
-        copiarTextoOuImagem(textoModal);
+        const modalTexto = document.getElementById("modalTexto");
+        const conteudo = modalTexto.dataset.valor; // pega o conteúdo real
+        copiarTextoOuImagem(conteudo);
     }
+
+    function compartilharItemModal() {
+        const modalTexto = document.getElementById("id-conteudo");
+        const conteudo = modalTexto.textContent;
+        fecharModal();
+        compartilharItem(conteudo);
+    }
+
 
     // Toast
     function mostrarToast(mensagem = "Copiado!") {

@@ -4,7 +4,6 @@ import com.example.clipboard.api.component.LastClipboardComponent;
 import com.example.clipboard.api.controller.ClipboardController;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -70,5 +69,4 @@ public class ClipboardService {
             e.printStackTrace();
         }
     }
-
 }
