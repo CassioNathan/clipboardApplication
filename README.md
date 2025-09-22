@@ -9,22 +9,21 @@
 ---
 
 ## 1. Introdução
-O **Clipboard** é uma aplicação desenvolvida para compartilhar rapidamente a área de transferência (**clipboard**) entre dispositivos **Windows** e **Mac**.  
+O **Clipboard** é uma aplicação desenvolvida para compartilhar rapidamente a área de transferência (**clipboard**) entre dispositivos.  
 
-O objetivo é tornar o processo simples e ágil, permitindo que **textos** e **imagens** e **pequenos arquivos** sejam transferidos de um dispositivo para outro sem complicações.
+O objetivo é tornar o processo simples e ágil, permitindo que **textos**, **imagens** ou **pequenos arquivos** sejam transferidos de um dispositivo para outro sem complicações e sem cabos.
 
 ---
 
 ## 2. Solução da Aplicação
 
-- **Área de transferência compartilhada:** possibilita enviar e receber conteúdos entre dispositivos.
+- **Área de transferência compartilhada:** possibilita enviar e receber conteúdos entre dispositivos  (até 100 megas cada arquivo).
 - **Interface web:** servidor possui uma página HTML que permite interagir com os itens copiados e enviar manualmente textos e pequenos arquivos.
-- **Interface para outros usuario:** possibilida compartilhar itens especificos com outros usuarios, assim, ele pode acessar o conteudo de forma isolada e mantendo sua privacidade
+- **Interface para outros usuario:** possibilida compartilhar itens especificos com outros usuarios, assim, eles podem acessar o conteudo de forma isolada e mantendo sua privacidade
 - **Extensão VS Code:** abre um WebView que direciona o usuário para a página web, facilitando o acesso dentro do editor.
 - **Histórico de itens:** últimos **5 itens copiados** (textos, imagens ou arquivos) ficam salvos e reutilizáveis na interface web.
 - **Integração com a barra do Windows:** ícone na aba de itens ocultos do windows para sempre estar disponivel.
-- **Atalho rápido:** permite abrir a página web ou webview instantaneamente e limpar a lista de itens.
-- **Enviar arquivos:** possibilidade de enviar pequenos arquivos (até 100 megas)e.
+- **Atalhos rápidos:** permite abrir a página web ou webview instantaneamente e limpar a lista de itens.
 
 ---
 
@@ -42,8 +41,13 @@ O objetivo é tornar o processo simples e ágil, permitindo que **textos** e **i
 ## 4. Uso
 
 1. Rodar o servidor local.  
-2. Acessar a interface via navegador ou WebView no VS Code.  
-3. Copiar e colar textos/imagens e pequenos arquivos entre dispositivos.  
+2. Acessar a interface via navegador ou WebView.
+   
+OBS: 
+Tudo o que for manipulado será salvo em memoria no servidor
+Sempre que uma imagem ou texto for copiado no server, automaticamente será adicionado ao clipboard
+Sempre que algo for enviado para o clipboard pela rela interface web ou webview será adicionado automaticamente ao clipboard do server, possibilitando
+um Control + V rapido 
 
 ---
 
