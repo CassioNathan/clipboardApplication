@@ -44,10 +44,9 @@ O objetivo é tornar o processo simples e ágil, permitindo que **textos**, **im
 2. Acessar a interface via navegador ou WebView.
    
 OBS: 
-Tudo o que for manipulado será salvo em memoria no servidor
-Sempre que uma imagem ou texto for copiado no server, automaticamente será adicionado ao clipboard
-Sempre que algo for enviado para o clipboard pela rela interface web ou webview será adicionado automaticamente ao clipboard do server, possibilitando
-um Control + V rapido 
+-- Tudo o que for manipulado será salvo em memoria no servidor
+-- Sempre que uma imagem ou texto for copiado no server, automaticamente será adicionado ao clipboard
+-- Sempre que algo for enviado para o clipboard pela rela interface web ou webview será adicionado automaticamente ao clipboard do server, possibilitando um Control + V rapido 
 
 ---
 
