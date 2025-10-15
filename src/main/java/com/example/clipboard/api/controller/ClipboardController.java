@@ -37,24 +37,45 @@ public class ClipboardController {
 
     private final LinkedList<String> clipboardList = new LinkedList<>();
     private final LinkedList<ClipboardFile> clipboardFiles = new LinkedList<>();
-    private final Map<String, String> clipboardShare = Collections.synchronizedMap(new LinkedHashMap<>());
+    // Clips compartilhados persistentes
+    private final Map<String, String> persistentSharedClips = Collections.synchronizedMap(new LinkedHashMap<>());
 
     @GetMapping
     public List<String> getClipboardList() {
         return clipboardList;
     }
 
-    @PostMapping("/share")
-    public String shareClipboard(@RequestBody Integer itemPosition) {
+    // Compartilhar clip de forma persistente
+    @PostMapping("/share/persistent")
+    public String shareClipboardPersistent(@RequestBody Integer itemPosition) {
         String uuid = UUID.randomUUID().toString();
-
-        if (clipboardShare.size() >= 5) {
-            String uuidMaisAntigo = clipboardShare.keySet().iterator().next();
-            clipboardShare.remove(uuidMaisAntigo);
-        }
-
-        clipboardShare.put(uuid, clipboardList.get(itemPosition));
+        persistentSharedClips.put(uuid, clipboardList.get(itemPosition));
         return uuid;
+    }
+
+    // Listar todos os clips compartilhados
+    @GetMapping("/shared")
+    public Map<String, String> listSharedClips() {
+        return persistentSharedClips;
+    }
+
+    // Consumir (ler) sem remover
+    @GetMapping("/shared/{uuid}")
+    public ResponseEntity<String> getSharedClip(@PathVariable String uuid) {
+        String conteudo = persistentSharedClips.get(uuid);
+        if (conteudo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(conteudo);
+    }
+
+    // Remover manualmente um clip compartilhado
+    @DeleteMapping("/shared/{uuid}")
+    public ResponseEntity<Void> removeSharedClip(@PathVariable String uuid) {
+        if (persistentSharedClips.remove(uuid) != null) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{uuid}")
